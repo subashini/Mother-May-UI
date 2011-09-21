@@ -1,7 +1,16 @@
 (function() {
 
   var root   = this
-    , mother = root.mother = {}
+    , mother = null
+
+  // Exports as CommonJS module
+  if (typeof exports !== 'undefined') {
+    mother = exports
+  }
+  // Exports for UI Automator or Browser
+  else {
+    mother = root.mother = {}
+  }
 
   // Each test case is referenced by name on the tests hash
   mother.tests = {}
@@ -51,10 +60,7 @@
   mother.may.please = function(name, test) {
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
     if (currentScenario) {
-      for (var i = 0; i < currentScenario.tests.length; i++) {
-        var test = currentScenario.tests[i]
-        test()
-      }
+      runScenario(currentScenario)
     }
     else {
       // Error with message about no test to run and needing mother.may.I()
@@ -68,14 +74,34 @@
   mother.please = function() {
     for (var i = 0; i < scenarios.length; i++) {
       var scenario = scenarios[i]
-      for (var j = 0; j < scenario.tests.length; j++) {
-        var test = scenario.tests[j]
-        test()
-      }
+      runScenario(scenario)
     }
 
     return this
   }
+
+  mother.setUp = function() {
+    this.target     = UIATarget.localTarget()
+    this.app        = this.target.frontMostApp()
+    this.mainWindow = this.app.mainWindow()
+  }
+
+  mother.tearDown = function() {
+
+  }
+
+  // Run all the tests in a scenario
+  function runScenario(scenario) {
+    mother.setUp.call(this)
+
+    for (var i = 0; i < scenario.tests.length; i++) {
+      var test = scenario.tests[i]
+      test.call(this)
+    }
+
+    mother.tearDown.call(this)
+  }
+
 
 }).call(this)
 

@@ -80,8 +80,8 @@
 
   // Runs each set of tests
   mother.please = function() {
-    for (var i = 0; i < scenarios.length; i++) {
-      var scenario = scenarios[i]
+    for (var i = 0; i < mother.scenarios.length; i++) {
+      var scenario = mother.scenarios[i]
       runScenario(scenario)
     }
 

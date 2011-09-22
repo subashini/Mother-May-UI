@@ -2,6 +2,7 @@
 
   var root   = this
     , mother = null
+    , assert = null
 
   // Exports as CommonJS module
   if (typeof exports !== 'undefined') {
@@ -10,7 +11,11 @@
   // Exports for UI Automator or Browser
   else {
     mother = root.mother = {}
+    assert = root.assert = {}
   }
+
+  // Mother
+  // ------
 
   // Each test case is referenced by name on the tests hash
   mother.tests = {}
@@ -35,18 +40,21 @@
   }
 
   // Adds a test to the current series
-  mother.may.and = function(testName, test) {
+  mother.may.and = function(testName, testFunction) {
 
-    // `test` is an optional parameter. If provided, use this test definition.
-    if (test !== undefined) {
-      mother.tests[testName] = test
+    if (testFunction !== undefined) {
+      mother.tests[testName] = testFunction
     }
     else {
-      test = mother.tests[testName]
+      testFunction = mother.tests[testName]
     }
 
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
     if (currentScenario) {
+      var test = {
+        name:         testName
+      , testFunction: testFunction
+      }
       currentScenario.tests.push(test)
     }
     else {
@@ -92,15 +100,72 @@
 
   // Run all the tests in a scenario
   function runScenario(scenario) {
+    UIALogger.logStart(scenario.name)
     mother.setUp.call(this)
 
-    for (var i = 0; i < scenario.tests.length; i++) {
-      var test = scenario.tests[i]
-      test.call(this)
+    var test = null
+    try {
+      for (var i = 0; i < scenario.tests.length; i++) {
+        test = scenario.tests[i]
+        test.testFunction.call(this)
+      }
+
+      var successMessage = scenario.name + ' passed'
+      UIALogger.logPass(successMessage)
+
+    }
+    catch (exception) {
+      var failMessage = 'Error in test \'' + test.name + '\''
+        + ' of scenario \'' + scenario.name + '\'.'
+        + ' ' + exception.message;
+      UIALogger.logFail(failMessage)
     }
 
     mother.tearDown.call(this)
   }
+
+  // Assert
+  // ------
+
+  assert.isEqual = function(actual, expected, message) {
+    if (actual != expected) {
+      var exception = {}
+      if (message) {
+        exception.message = message
+      }
+      else {
+        exception.message = 'Expected \'' + expected + '\' got \'' + actual + '\'.'
+      }
+      throw exception
+    }
+  }
+
+  assert.isStrictEqual = function(actual, expected, message) {
+    if (actual !== expected) {
+      var exception = {}
+      if (message) {
+        exception.message = message
+      }
+      else {
+        exception.message = 'Expected \'' + expected + '\' got \'' + actual + '\'.'
+      }
+      throw exception
+    }
+  }
+
+  assert.isTrue = function(value, message) {
+    if (!value) {
+      var exception = {}
+      if (message) {
+        exception.message = message
+      }
+      else {
+        exception.message = 'Expression \'' + value + '\' failed.'
+      }
+      throw exception
+    }
+  }
+
 
 
 }).call(this)

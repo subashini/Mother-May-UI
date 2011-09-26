@@ -49,7 +49,7 @@ traceTemplate=""
 command="instruments"
 verbose=0
 testFile=""
-dateTime=$(date +%Y-%m-%dT%H:%M:%S)
+dateTime=$(date +%Y-%m-%dT%H.%M.%S)
 usage="Usage: ${0} -i <device ID> -a <app bundle> -o <output dir> [-v] <test file>"
 
 function lastModifiedTime {
@@ -208,7 +208,8 @@ eval ${command}
 
 for tempTraceDocument in $(ls ${tempOutputDir})
 do
-  finalTraceDocument="${outputDir}/${0%.*}.trace"
+  targetAppName=$(basename ${targetApp})
+  finalTraceDocument="${outputDir}/${targetAppName}.trace"
   mv "${tempTraceDocument}" "${finalTraceDocument}"
 done
 

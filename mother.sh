@@ -41,6 +41,9 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Fail on any error
+set -e
+
 app=""
 deviceID=""
 outputDir=""
@@ -204,7 +207,7 @@ tempOutputDir="${outputDir}/tmp-$$"
 mkdir "${tempOutputDir}" > /dev/null
 pushd "${tempOutputDir}" > /dev/null
 
-eval ${command}
+eval ${command} || exit 1
 
 for tempTraceDocument in $(ls ${tempOutputDir})
 do
@@ -219,4 +222,4 @@ rm -rf "${tempOutputDir}"
 
 popd > /dev/null
 
-echo "Finished: Results are located in ${outputDir}"
+echo "Results are located in ${outputDir}"

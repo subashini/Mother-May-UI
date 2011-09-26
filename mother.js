@@ -3,6 +3,7 @@
   var root   = this
     , mother = null
     , assert = null
+    , util   = null
 
   // Exports as CommonJS module
   if (typeof exports !== 'undefined') {
@@ -12,6 +13,7 @@
   else {
     mother = root.mother = {}
     assert = root.assert = {}
+    util   = root.util   = {}
   }
 
   // Mother
@@ -123,7 +125,7 @@
         }
       }
       var failMessage = 'Error in test \'' + test.name + '\''
-        + ' of scenario \'' + scenario.name + '\'.'
+        + ' of scenario \'' + scenario.name + '\':'
         + ' ' + exception.message;
       UIALogger.logFail(failMessage)
       this.target.logElementTree()
@@ -172,6 +174,29 @@
       }
       throw exception
     }
+  }
+
+  // Util
+  // ----
+
+  util.waitFor = function(element, timeout) {
+    if (!timeout) {
+      timeout = 5.0
+    }
+
+    var delay = 0.1
+
+    for (var i = 0; i < timeout / delay; i++) {
+      UIATarget.localTarget().delay(delay)
+
+      if (element.isVisible()) {
+        return
+      }
+    }
+
+    var exception = {}
+    exception.message = 'Element never became visible'
+    throw exception
   }
 
 }).call(this)

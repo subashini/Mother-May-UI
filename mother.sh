@@ -41,14 +41,14 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-app=
-deviceID=
-outputDir=
-targetApp=
-traceTemplate=
+app=""
+deviceID=""
+outputDir=""
+targetApp=""
+traceTemplate=""
 command="instruments"
 verbose=0
-testFile=
+testFile=""
 dateTime=$(date +%Y-%m-%dT%H:%M:%S)
 usage="Usage: ${0} -i <device ID> -a <app bundle> -o <output dir> [-v] <test file>"
 
@@ -117,8 +117,8 @@ if [[ -d ${app} ]]
 then
   targetApp=${app}
 else
-  mostRecentlyModifiedTime=
-  environment=
+  mostRecentlyModifiedTime=-1
+  environment=""
 
   if [[ -z "${deviceID}" ]]
   then
@@ -129,7 +129,7 @@ else
 
   for potentialApp in $(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}")
   do
-    if [[ -n "${modifiedTime}" ]]
+    if [[ "${modifiedTime}" == -1 ]]
     then
       mostRecentlyModifiedTime=$(lastModifiedTime ${potentialApp})
       targetApp=${potentialApp}

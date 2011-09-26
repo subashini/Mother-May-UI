@@ -200,7 +200,7 @@ then
 fi
 
 
-# Workaround the output trace fileit by just changing to the output directory so any output ends up in there
+# Workaround the output trace file by just changing to the output directory so any output ends up in there
 
 pushd . > /dev/null
 tempOutputDir="${outputDir}/tmp-$$"

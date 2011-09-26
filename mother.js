@@ -42,7 +42,7 @@
   }
 
   // Adds a test to the current series
-  mother.may.and = function(testName, testFunction) {
+  mother.may.by = function(testName, testFunction) {
 
     if (testFunction !== undefined) {
       mother.tests[testName] = testFunction
@@ -66,6 +66,8 @@
 
     return this
   }
+
+  mother.may.and = mother.may.by
 
   mother.may.please = function(name, test) {
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
@@ -125,7 +127,7 @@
         }
       }
       var failMessage = 'Error in test \'' + test.name + '\''
-        + ' of scenario \'' + scenario.name + '\':'
+        + ' of scenario \'' + scenario.name + '\'.'
         + ' ' + exception.message;
       UIALogger.logFail(failMessage)
       this.target.logElementTree()
@@ -180,7 +182,7 @@
   // ----
 
   util.waitFor = function(element, timeout) {
-    if (!timeout) {
+    if (timeout == null) {
       timeout = 5.0
     }
 
@@ -195,7 +197,7 @@
     }
 
     var exception = {}
-    exception.message = 'Element never became visible'
+    exception.message = "Element never became visible"
     throw exception
   }
 

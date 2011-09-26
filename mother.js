@@ -102,12 +102,14 @@
   function runScenario(scenario) {
     UIALogger.logStart(scenario.name)
     mother.setUp.call(this)
+    scenario.passedTests = []
 
     var test = null
     try {
       for (var i = 0; i < scenario.tests.length; i++) {
         test = scenario.tests[i]
         test.testFunction.call(this)
+        scenario.passedTests[i] = test
       }
 
       var successMessage = scenario.name + ' passed'
@@ -115,10 +117,16 @@
 
     }
     catch (exception) {
+      if (scenario.passedTests.length > 1) {
+        for (var i = 0; i < scenario.passedTests.length - 1; i++) {
+          UIALogger.logMessage(scenario.passedTests[i].name)
+        }
+      }
       var failMessage = 'Error in test \'' + test.name + '\''
         + ' of scenario \'' + scenario.name + '\'.'
         + ' ' + exception.message;
       UIALogger.logFail(failMessage)
+      this.target.logElementTree()
     }
 
     mother.tearDown.call(this)
@@ -165,8 +173,6 @@
       throw exception
     }
   }
-
-
 
 }).call(this)
 

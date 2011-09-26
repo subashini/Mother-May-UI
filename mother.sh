@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /bin/bash
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # mother.sh
@@ -174,12 +174,18 @@ command="${command} -d \"${outputDir}/mother.trace\""
 
 if [[ -z "$*" ]]
 then
-  echo "Error: No test scripts were supplied"
+  echo "Error: No test scripts were given"
   exit 1
 else
   for scriptFile in "$*"
   do
-    testFile="${scriptFile}"
+    if [[ -f "${scriptFile}" ]]
+    then
+      testFile=$(find "${PWD}" -name "${scriptFile}")
+    else
+      echo "Error: Could not find ${scriptFile}"
+      exit 1
+    fi
   done
 
   command="${command} -e UIASCRIPT \"${testFile}\""

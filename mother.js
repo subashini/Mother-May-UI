@@ -19,6 +19,11 @@
   // Mother
   // ------
 
+  mother.config = {
+    verbose: false
+  }
+
+
   // Each test case is referenced by name on the tests hash
   mother.tests = {}
 
@@ -84,7 +89,7 @@
   mother.please = function() {
     for (var i = 0; i < mother.scenarios.length; i++) {
       var scenario = mother.scenarios[i]
-      runScenario(scenario)
+      runScenario(scenario, this.config)
     }
 
     return this
@@ -101,7 +106,7 @@
   }
 
   // Run all the tests in a scenario
-  function runScenario(scenario) {
+  function runScenario(scenario, config) {
     UIALogger.logStart(scenario.name)
     mother.setUp.call(this)
     scenario.passedTests = []
@@ -110,17 +115,15 @@
     try {
       for (var i = 0; i < scenario.tests.length; i++) {
         test = scenario.tests[i]
+
+        if (config.verbose) {
+          UIALogger.logMessage(test.name)
+        }
+
         test.testFunction.call(this)
-
-        var message = test.name
-        UIALogger.logMessage(message)
-
         scenario.passedTests[i] = test
       }
-
-      var successMessage = scenario.name
-      UIALogger.logPass(successMessage)
-
+      UIALogger.logPass(scenario.name)
     }
     catch (exception) {
       var failMessage = 'Error in test \'' + test.name + '\''

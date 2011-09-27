@@ -89,7 +89,7 @@
   mother.please = function() {
     for (var i = 0; i < mother.scenarios.length; i++) {
       var scenario = mother.scenarios[i]
-      runScenario(scenario, this.config)
+      runScenario(scenario)
     }
 
     return this
@@ -106,7 +106,7 @@
   }
 
   // Run all the tests in a scenario
-  function runScenario(scenario, config) {
+  function runScenario(scenario) {
     UIALogger.logStart(scenario.name)
     mother.setUp.call(this)
     scenario.passedTests = []
@@ -116,7 +116,7 @@
       for (var i = 0; i < scenario.tests.length; i++) {
         test = scenario.tests[i]
 
-        if (config.verbose) {
+        if (mother.config.verbose) {
           UIALogger.logMessage(test.name)
         }
 

@@ -42,7 +42,7 @@
   }
 
   // Adds a test to the current series
-  mother.may.by = function(testName, testFunction) {
+  mother.may.and = function(testName, testFunction) {
 
     if (testFunction !== undefined) {
       mother.tests[testName] = testFunction
@@ -66,8 +66,6 @@
 
     return this
   }
-
-  mother.may.and = mother.may.by
 
   mother.may.please = function(name, test) {
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
@@ -113,19 +111,18 @@
       for (var i = 0; i < scenario.tests.length; i++) {
         test = scenario.tests[i]
         test.testFunction.call(this)
+
+        var message = test.name
+        UIALogger.logMessage(message)
+
         scenario.passedTests[i] = test
       }
 
-      var successMessage = scenario.name + ' passed'
+      var successMessage = scenario.name
       UIALogger.logPass(successMessage)
 
     }
     catch (exception) {
-      if (scenario.passedTests.length > 1) {
-        for (var i = 0; i < scenario.passedTests.length - 1; i++) {
-          UIALogger.logMessage(scenario.passedTests[i].name)
-        }
-      }
       var failMessage = 'Error in test \'' + test.name + '\''
         + ' of scenario \'' + scenario.name + '\'.'
         + ' ' + exception.message;

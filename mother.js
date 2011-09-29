@@ -19,6 +19,8 @@
   // Mother
   // ------
 
+  // Configuration options
+  // Can override in test file
   mother.config = {
     verbose: false
   }
@@ -49,6 +51,7 @@
   // Adds a test to the current series
   mother.may.and = function(testName, testFunction) {
 
+    // Override the existing test function if provided
     if (testFunction !== undefined) {
       mother.tests[testName] = testFunction
     }
@@ -56,6 +59,7 @@
       testFunction = mother.tests[testName]
     }
 
+    // Attach the test case to the current scenario
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
     if (currentScenario) {
       var test = {
@@ -64,28 +68,35 @@
       }
       currentScenario.tests.push(test)
     }
+    // No scenario to associate test case too
     else {
-      // Error with message about no test to run and needing mother.may.I()
-      // first.
+      var exception = {
+        message: 'No scenario to attach test case to. May need to call `mother.may.I()` first'
+      }
+      throw exception
     }
 
     return this
   }
 
+  // Run the current scenario
   mother.may.please = function(name, test) {
     var currentScenario = mother.scenarios[mother.scenarios.length - 1]
     if (currentScenario) {
       runScenario(currentScenario)
     }
+    // No scenario to run
     else {
-      // Error with message about no test to run and needing mother.may.I()
-      // first.
+      var exception = {
+        message: 'No scenario to run. May need to call `mother.may.I()` first'
+      }
+      throw exception
     }
 
     return this
   }
 
-  // Runs each set of tests
+  // Runs all scenarios
   mother.please = function() {
     for (var i = 0; i < mother.scenarios.length; i++) {
       var scenario = mother.scenarios[i]
@@ -95,12 +106,18 @@
     return this
   }
 
+  // Called before each scenario is run. Takes care of basic boiler plate code.
+  // Can override in the test file with:
+  // mother.setUp = function() { /* custom code */ }
   mother.setUp = function() {
     this.target     = UIATarget.localTarget()
     this.app        = this.target.frontMostApp()
     this.mainWindow = this.app.mainWindow()
   }
 
+  // Called after each scenario is run. Handles basic clean up.
+  // Can override in the test file with:
+  // mother.tearDown = function() { /* custom code */ }
   mother.tearDown = function() {
 
   }
@@ -139,6 +156,8 @@
   // Assert
   // ------
 
+  // Throws exception if (actual != expected). If custom message string is not
+  // provided, uses generic message string.
   assert.isEqual = function(actual, expected, message) {
     if (actual != expected) {
       var exception = {}
@@ -152,6 +171,8 @@
     }
   }
 
+  // Throws exception if (actual !== expected). If custom message string is not
+  // provided, uses generic message string.
   assert.isStrictEqual = function(actual, expected, message) {
     if (actual !== expected) {
       var exception = {}
@@ -165,6 +186,8 @@
     }
   }
 
+  // Throws exception if !value. If custom message string is not
+  // provided, uses generic message string.
   assert.isTrue = function(value, message) {
     if (!value) {
       var exception = {}
@@ -181,6 +204,8 @@
   // Util
   // ----
 
+  // Waits for the element to become visible. If timeout expires, throws an
+  // exception.
   util.waitFor = function(element, timeout) {
     if (timeout == null) {
       timeout = 5.0

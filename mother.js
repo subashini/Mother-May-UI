@@ -167,7 +167,7 @@
       }
 
       if (mother.config.verbose) {
-        UITarget.localTarget().logElementTree()
+        UAITarget.localTarget().logElementTree()
       }
     }
 

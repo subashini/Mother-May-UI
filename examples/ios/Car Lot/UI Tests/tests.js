@@ -23,11 +23,17 @@ mother.config.verbose = true
 mother.config.takeScreenshot = mother.config.takeScreenshotOptions.ALWAYS
 
 // A setUp function is called at the beginning of each scenario. Mother provides
-// a default setUp for iOS apps. You can override it with your custom
-// functionality in this file like so:
-// mother.setUp = function() {
-//   // ...
-// }
+// a default setUp for iOS apps. We override it here to customize the UI
+// Automation timeout parameter.
+mother.setUp = function() {
+  // Target, App, and MainWindow are also provided by Mother's default setUp.
+  this.target     = UIATarget.localTarget()
+  this.app        = this.target.frontMostApp()
+  this.mainWindow = this.app.mainWindow()
+  // Changes the default timeout from 5 to 2. Timeout is used in wait for
+  // invalid. A smaller timeout will transition between views quicker.
+  this.target.setTimeout(2)
+}
 
 // A tearDown function is called at the end of each scenario. You can override
 // the default tearDown as well:

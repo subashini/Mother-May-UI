@@ -5,7 +5,7 @@
 //    c. Click Add then Import under the Scripts pane on the left
 //    d. Select this file
 //    e. Click the Record button at the top
-//    f. The test results will be outputted in the Trace Log
+//    f. The test results will be outputted in the Editor Log
 //
 // 2) Using the included bash script mother.sh (Xcode 4.2+ only)
 //    a. mother/bin/ios/mother.sh -i <device UDID> -a "Car Lot.app" -o runs -v tests.js
@@ -50,7 +50,6 @@ mother.may.I('Log in and log out as testUser')
     // Retrieves the first password field in the view
     var passwordField = this.mainWindow.secureTextFields()[0]
     passwordField.setValue('testPassword')
-    this.target.logElementTree()
     // Gets the Log In button
     var loginButton = this.mainWindow.buttons()[0]
     loginButton.tap()
@@ -72,6 +71,34 @@ mother.may.I('Log in and log out as testUser')
     backButton.tap()
     backButton.waitForInvalid()
   })
+
+// Adds another scenario to test. Things get interesting with test case re-use.
+mother.may.I('View details of the Aston Martin')
+  // Since we already declared the log in test case in another scenario, we can
+  // simply reference it here and not re-declare the function. So DRY.
+  .and('log in as testUser')
+  .and('select the Aston Martin', function() {
+    // Reference the UITableView
+    var tableView = this.mainWindow.elements()[1]
+    assert.isTrue(tableView.isValid(), 'Unable to find cars table view')
+    // The cell is accessed based on the cell's accessibilityLabel property.
+    // This is set in the view controller.
+    var cell = tableView.cells().firstWithName('2012 Aston Martin Virage')
+    tableView.scrollToElementWithName(cell)
+    cell.tap()
+    tableView.waitForInvalid()
+  })
+  .and('verify Aston Martin details', function() {
+    // Validate the values
+  })
+  .and('back out to cars list', function() {
+    var backButton = this.mainWindow.navigationBar().leftButton()
+    assert.isTrue(backButton.isValid(), 'Unable to find Back button')
+    backButton.tap()
+    backButton.waitForInvalid()
+  })
+  // We can re-use the log out test case too
+  .and('log out')
 
 // Calling please on mother executes each scenario in order until one fails or
 // they all pass.

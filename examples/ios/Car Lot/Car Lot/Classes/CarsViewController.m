@@ -86,7 +86,12 @@
     }
     
     Car *car = [self.cars objectAtIndex:indexPath.row];
-    cell.textLabel.text = [NSString stringWithFormat:@"%@ %@ %@", car.year, car.make, car.model];
+    NSString *title = [NSString stringWithFormat:@"%@ %@ %@", car.year, car.make, car.model];
+    cell.textLabel.text = title;
+    
+    // Set the Accessibility Label to something uniquely identifiable for this
+    // row so the cell can be referenced label later on
+    cell.accessibilityLabel = title;
     
     return cell;
 }

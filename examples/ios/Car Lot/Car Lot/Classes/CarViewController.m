@@ -56,14 +56,19 @@
     }
     
     if (indexPath.row == 0) {
+        // Sets the Accessibility Label so the specific cell can be referenced
+        // later on
+        cell.accessibilityLabel = @"Year";
         cell.textLabel.text = @"Year";
         cell.detailTextLabel.text = self.car.year;
     }
     else if (indexPath.row == 1) {
+        cell.accessibilityLabel = @"Make";
         cell.textLabel.text = @"Make";
         cell.detailTextLabel.text = self.car.make;        
     }
     else if (indexPath.row == 2) {
+        cell.accessibilityLabel = @"Model";
         cell.textLabel.text = @"Model";
         cell.detailTextLabel.text = self.car.model;
     }

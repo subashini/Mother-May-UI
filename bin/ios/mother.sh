@@ -9,34 +9,33 @@
 # Example(s):
 #
 #   $ ./mother.sh -i 1341234124
-#                 -a Sample.app \
-#                 -o outputDir 
+#                 -a Sample.app
+#                 -o outputDir
 #                 -v
 #                 testFile.js
 # 
 # Discussion:
 #
 #   This shell script invokes `instruments' so that the supplied UI Automation
-#   tests can be run against the device identified by the UDID (specified as
-#   the argument to -i) is available from the Xcode's Organizer.  If the -i 
-#   option is specified and the device is plugged in, this script will run 
-#   the tests using the referenced device. If it is not supplied, this script 
-#   will run the tests using the simulator. 
+#   tests can be run against the device identified by the UDID (specified as the
+#   argument to -i) is available from the Xcode's Organizer.  If the -i option
+#   is specified and the device is plugged in, this script will run the tests
+#   using the referenced device. If it is not supplied, this script will run the
+#   tests using the simulator.
 #
-#   You can specify the path to the app, however, the specified app must
-#   be able to be run on the specified device.  If you only give the name of 
-#   the app (as in Sample.app), this script will attempt to find it.  If you 
-#   specif a UDID, this script will attempt to find the app in the current
-#   user's Xcode build directory.  In particular, the following directory 
-#   will be sought out:
+#   You can specify the path to the app, however, the specified app must be able
+#   to be run on the specified device.  If you only give the name of the app (as
+#   in Sample.app), this script will attempt to find it.  If you specif a UDID,
+#   this script will attempt to find the app in the current user's Xcode build
+#   directory.  In particular, the following directory will be sought out:
 #
 #     ~/Library/Developer/Xcode/DerivedData/.../Debug-iphoneos/Sample.app
 #
-#   If there are multiple app bundles that match the value of the -a 
-#   argument, the most recently touched one will be used.  This behavior
-#   does not occur when you explicitly name the app bundle to use.
+#   If there are multiple app bundles that match the value of the -a argument,
+#   the most recently touched one will be used.  This behavior does not occur
+#   when you explicitly name the app bundle to use.
 #
-#   The results of this script end up in the output directory under a 
+#   The results of this script end up in the output directory under a
 #   timestamped subdirectory.
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -99,7 +98,13 @@ then
 fi
 
 
-# Device ID
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Begins building up the `instruments` command options
+#
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Sets the Device ID option
 
 if [[ ! -z "${deviceID}" ]]
 then
@@ -107,10 +112,10 @@ then
 fi
 
 
-# Trace Template
+# Sets the Trace Template option
 
+# Finds the default Automation trace template file.
 traceTemplate=$(find /Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments -type f -name "Automation.tracetemplate")
-
 if [[ -z "${traceTemplate}" ]]
 then
   echo "Error: Could not find Automation.tracetemplate" >&2
@@ -120,14 +125,16 @@ else
 fi
 
 
-# Target App
+# Sets the Target App option
 
+# If the app is a full directory path, then use the directory path as is
 if [[ -d ${app} ]]
 then
   targetApp="${app}"
+# The location of the app is unknown. Finds the path.
 else
+  # Path differs for Simulator or Device
   environment=""
-
   if [[ -z "${deviceID}" ]]
   then
     environment="iphonesimulator"
@@ -141,7 +148,6 @@ else
     | awk '{ print $11 }')
 fi
 
-echo $targetApp
 if [[ -z "${targetApp}" ]]
 then
   echo "Error: Could not find ${app}" >&2
@@ -151,7 +157,7 @@ else
 fi
 
 
-# Output Directory
+# Sets the Output directory for the trace results
 
 if [[ ! -d "${outputDir}" ]]
 then
@@ -168,7 +174,7 @@ command="${command} -e UIARESULTSPATH \"${outputDir}\""
 command="${command} -d \"${outputDir}/mother.trace\""
 
 
-# Test File
+# Sets the Test File
 
 if [[ -z "$*" ]]
 then

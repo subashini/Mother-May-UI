@@ -40,11 +40,14 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Bash params
 # Fail on any error
 set -e
 # Debug output
 #set -x
 
+
+# Global variables
 app=""
 deviceID=""
 outputDir=""
@@ -56,6 +59,7 @@ testFile=""
 dateTime=$(date +%Y-%m-%dT%H.%M.%S)
 usage="Usage: ${0} -w <device ID> -a <app bundle> -o <output dir> -t <test file> [-v]"
 
+
 function getAbsolutePath {
   dir=$(dirname "$1")
   cd "$dir"
@@ -64,154 +68,154 @@ function getAbsolutePath {
   echo $absolutePath
 }
 
-# Options
+function parseOptions {
+  while getopts ":a:w:t:o:v" opt
+  do
+    case ${opt} in
+      a)
+        app=${OPTARG}
+        ;;
+      t)
+        testFile=${OPTARG}
+        ;;
+      w)
+        deviceID=${OPTARG}
+        ;;
+      o)
+        outputDir="${OPTARG}/${dateTime}"
+        ;;
+      v)
+        verbose=1
+        ;;
+      ?)
+        echo "${usage}"
+        exit 1
+    esac
+  done
 
-while getopts ":a:w:t:o:v" opt
-do
-  case ${opt} in
-    a)
-      app=${OPTARG}
-      ;;
-    t)
-      testFile=${OPTARG}
-      ;;
-    w)
-      deviceID=${OPTARG}
-      ;;
-    o)
-      outputDir="${OPTARG}/${dateTime}"
-      ;;
-    v)
-      verbose=1
-      ;;
-    ?)
-      echo "${usage}"
-      exit 1
-  esac
-done
+  shift $(($OPTIND - 1))
 
-shift $(($OPTIND - 1))
-
-if [[ -z "${app}" || -z "${outputDir}" ]]
-then
-  echo "${usage}"
-  exit 1
-fi
-
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Begins building up the `instruments` command options
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# Sets the Device ID option
-
-if [[ ! -z "${deviceID}" ]]
-then
-  command="${command} -w \"${deviceID}\""
-fi
-
-
-# Sets the Trace Template option
-
-# Finds the default Automation trace template file.
-traceTemplate=$(find /Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments -type f -name "Automation.tracetemplate")
-if [[ -z "${traceTemplate}" ]]
-then
-  echo "Error: Could not find Automation.tracetemplate" >&2
-  exit 1
-else
-  command="${command} -t \"${traceTemplate}\""
-fi
-
-
-# Sets the Target App option
-
-# If the app is a full directory path, then use the directory path as is
-if [[ -d ${app} ]]
-then
-  targetApp="${app}"
-# The location of the app is unknown. Finds the path.
-else
-  # Path differs for Simulator or Device
-  environment=""
-  if [[ -z "${deviceID}" ]]
+  if [[ -z "${app}" || -z "${outputDir}" ]]
   then
-    environment="iphonesimulator"
+    echo "${usage}"
+    exit 1
+  fi
+}
+
+function setDeviceId {
+  if [[ ! -z "${deviceID}" ]]
+  then
+    command="${command} -w \"${deviceID}\""
+  fi
+}
+
+function setTraceTemplate {
+  # Finds the default Automation trace template file.
+  traceTemplate=$(find /Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments -type f -name "Automation.tracetemplate")
+  if [[ -z "${traceTemplate}" ]]
+  then
+    echo "Error: Could not find Automation.tracetemplate" >&2
+    exit 1
   else
-    environment="iphoneos"
+    command="${command} -t \"${traceTemplate}\""
+  fi
+}
+
+function setTargetApp {
+  # If the app is a full directory path, then use the directory path as is
+  if [[ -d ${app} ]]
+  then
+    targetApp="${app}"
+  # The location of the app is unknown. Finds the path.
+  else
+    # Path differs for Simulator or Device
+    environment=""
+    if [[ -z "${deviceID}" ]]
+    then
+      environment="iphonesimulator"
+    else
+      environment="iphoneos"
+    fi
+
+    # Finds the most recent version of the app
+    targetApp=$(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}" -ls \
+      | sort -M -k8,10 \
+      | awk '{ print $11 }')
   fi
 
-  # Finds the most recent version of the app.
-  targetApp=$(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}" -ls \
-    | sort -M -k8,10 \
-    | awk '{ print $11 }')
-fi
+  if [[ -z "${targetApp}" ]]
+  then
+    echo "Error: Could not find ${app}" >&2
+    exit 1
+  else
+    command="${command} \"${targetApp}\""
+  fi
+}
 
-if [[ -z "${targetApp}" ]]
-then
-  echo "Error: Could not find ${app}" >&2
-  exit 1
-else
-  command="${command} \"${targetApp}\""
-fi
+function setOutputDirectory {
+  if [[ ! -d "${outputDir}" ]]
+  then
+    mkdir -p "${outputDir}"
+  fi
 
+  outputDir="$(getAbsolutePath "${outputDir}")"
+  command="${command} -e UIARESULTSPATH \"${outputDir}\""
+}
 
-# Sets the Output directory for the trace results
+function setTestFile {
+  if [[ -f "${testFile}" ]]
+  then
+    testFile=$(getAbsolutePath "${testFile}")
+    command="${command} -e UIASCRIPT \"${testFile}\""
+    echo "${command}"
+  else
+    echo "Error: No test script was given"
+    exit 1
+  fi
+}
 
-if [[ ! -d "${outputDir}" ]]
-then
-  mkdir -p "${outputDir}"
-fi
+function runTest {
+  # Not sure how to specify the output directory for instruments (the -d param
+  # does not seem to work), so executing the instruments command from the output
+  # directory.
+  tempOutputDir="${outputDir}/tmp-$$"
+  mkdir "${tempOutputDir}"
+  cd "${tempOutputDir}"
 
-outputDir="$(getAbsolutePath "${outputDir}")"
-command="${command} -e UIARESULTSPATH \"${outputDir}\""
+  # Executes the test
+  eval ${command} || exit 1
 
+  # Moves all the trace documents to given specified output directory
+  for tempTraceDocument in $(ls "${tempOutputDir}")
+  do
+    targetAppName=$(basename "${targetApp}")
+    finalTraceDocument="${outputDir}/${targetAppName}.trace"
+    mv "${tempTraceDocument}" "${finalTraceDocument}"
+  done
 
-# # Trace Document
-# # instruments doesn't currently seem to respect this
+  # Cleans up
+  rm -rf "${tempOutputDir}"
 
-# command="${command} -d \"${outputDir}/mother.trace\""
+  # Restore the working directory
+  cd - >/dev/null
+}
 
+# Parses the options
+parseOptions "$@"
 
-# Sets the Test File
+# Builds up the instruments command
+setDeviceId
+setTraceTemplate
+setTargetApp
+setOutputDirectory
+setTestFile
 
-if [[ -f "${testFile}" ]]
-then
-  testFile=$(getAbsolutePath "${testFile}")
-  command="${command} -e UIASCRIPT \"${testFile}\""
-  echo "${command}"
-else
-  echo "Error: No test script was given"
-  exit 1
-fi
-
+# Prints out the built up command if in verbose mode
 if (( ${verbose} > 0))
 then
   echo "${command}"
 fi
 
+# Executes the test
+runTest
 
-# Workaround the output trace file by just changing to the output directory so any output ends up in there
-
-originalDir=${PWD}
-tempOutputDir="${outputDir}/tmp-$$"
-mkdir "${tempOutputDir}"
-cd "${tempOutputDir}"
-
-eval ${command} || exit 1
-
-for tempTraceDocument in $(ls "${tempOutputDir}")
-do
-  targetAppName=$(basename "${targetApp}")
-  finalTraceDocument="${outputDir}/${targetAppName}.trace"
-  mv "${tempTraceDocument}" "${finalTraceDocument}"
-done
-
-rm -rf "${tempOutputDir}"
-
-# Restore the working directory
-
-cd "${originalDir}"
-echo "Results are located in ${outputDir}"

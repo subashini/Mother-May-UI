@@ -8,17 +8,17 @@
 #
 # Example(s):
 #
-#   $ ./mother.sh -i 1341234124
+#   $ ./mother.sh -w 1341234124
 #                 -a Sample.app
 #                 -o outputDir
+#                 -t testFile.js
 #                 -v
-#                 testFile.js
 # 
 # Discussion:
 #
 #   This shell script invokes `instruments' so that the supplied UI Automation
 #   tests can be run against the device identified by the UDID (specified as the
-#   argument to -i) is available from the Xcode's Organizer.  If the -i option
+#   argument to -w) is available from the Xcode's Organizer.  If the -w option
 #   is specified and the device is plugged in, this script will run the tests
 #   using the referenced device. If it is not supplied, this script will run the
 #   tests using the simulator.
@@ -54,7 +54,7 @@ command="instruments"
 verbose=0
 testFile=""
 dateTime=$(date +%Y-%m-%dT%H.%M.%S)
-usage="Usage: ${0} -i <device ID> -a <app bundle> -o <output dir> [-v] <test file>"
+usage="Usage: ${0} -w <device ID> -a <app bundle> -o <output dir> -t <test file> [-v]"
 
 function fullPath {
   dir=$(dirname ${1})
@@ -68,13 +68,16 @@ function fullPath {
 
 # Options
 
-while getopts ":a:i:t:o:v" opt
+while getopts ":a:w:t:o:v" opt
 do
   case ${opt} in
     a)
       app=${OPTARG}
       ;;
-    i)
+    t)
+      testFile=${OPTARG}
+      ;;
+    w)
       deviceID=${OPTARG}
       ;;
     o)
@@ -175,6 +178,11 @@ command="${command} -d \"${outputDir}/mother.trace\""
 
 
 # Sets the Test File
+
+# if [[ -f "${testFile}" ]]
+# then
+#   command="${command} -e UIASCRIPT \"${testFile}\""
+# else
 
 if [[ -z "$*" ]]
 then

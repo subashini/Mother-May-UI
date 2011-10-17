@@ -43,6 +43,8 @@
 
 # Fail on any error
 set -e
+# Debug output
+#set -x
 
 app=""
 deviceID=""
@@ -54,11 +56,6 @@ verbose=0
 testFile=""
 dateTime=$(date +%Y-%m-%dT%H.%M.%S)
 usage="Usage: ${0} -i <device ID> -a <app bundle> -o <output dir> [-v] <test file>"
-
-function lastModifiedTime {
-  dir=${1}
-  echo $(find "${1}" -exec stat -f "%m" \{} \; | sort -n -r | head -1)
-}
 
 function fullPath {
   dir=$(dirname ${1})
@@ -129,7 +126,6 @@ if [[ -d ${app} ]]
 then
   targetApp="${app}"
 else
-  mostRecentlyModifiedTime=-1
   environment=""
 
   if [[ -z "${deviceID}" ]]
@@ -139,24 +135,13 @@ else
     environment="iphoneos"
   fi
 
-  for potentialApp in $(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}")
-  do
-    if [[ "${modifiedTime}" == -1 ]]
-    then
-      mostRecentlyModifiedTime=$(lastModifiedTime ${potentialApp})
-      targetApp="${potentialApp}"
-    fi
-
-    modifiedTime=$(lastModifiedTime ${potentialApp})
-
-    if [[ ${modifiedTime} > ${mostRecentlyModifiedTime} ]]
-    then
-      mostRecentlyModifiedTime=${modifiedTime}
-      targetApp="${potentialApp}"
-    fi
-  done
+  # Finds the most recent version of the app.
+  targetApp=$(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}" -ls \
+    | sort -M -k8,10 \
+    | awk '{ print $11 }')
 fi
 
+echo $targetApp
 if [[ -z "${targetApp}" ]]
 then
   echo "Error: Could not find ${app}" >&2

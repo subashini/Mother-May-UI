@@ -56,14 +56,12 @@ testFile=""
 dateTime=$(date +%Y-%m-%dT%H.%M.%S)
 usage="Usage: ${0} -w <device ID> -a <app bundle> -o <output dir> -t <test file> [-v]"
 
-function fullPath {
-  dir=$(dirname ${1})
-  filename=$(basename ${1})
-  originalDir=${PWD}
-  cd "${dir}"
-  absoluteDir=${PWD}
-  cd ${originalDir}
-  echo "${absoluteDir}/${filename}"
+function getAbsolutePath {
+  dir=$(dirname "$1")
+  cd "$dir"
+  absolutePath="$(pwd)"/"$(basename "$1")"
+  cd - >/dev/null
+  echo $absolutePath
 }
 
 # Options
@@ -167,40 +165,26 @@ then
   mkdir -p "${outputDir}"
 fi
 
-outputDir="$(fullPath "${outputDir}")"
+outputDir="$(getAbsolutePath "${outputDir}")"
 command="${command} -e UIARESULTSPATH \"${outputDir}\""
 
 
-# Trace Document
-# instruments doesn't currently seem to respect this
+# # Trace Document
+# # instruments doesn't currently seem to respect this
 
-command="${command} -d \"${outputDir}/mother.trace\""
+# command="${command} -d \"${outputDir}/mother.trace\""
 
 
 # Sets the Test File
 
-# if [[ -f "${testFile}" ]]
-# then
-#   command="${command} -e UIASCRIPT \"${testFile}\""
-# else
-
-if [[ -z "$*" ]]
+if [[ -f "${testFile}" ]]
 then
-  echo "Error: No test scripts were given"
-  exit 1
-else
-  for scriptFile in "$*"
-  do
-    if [[ -f "${scriptFile}" ]]
-    then
-      testFile=$(fullPath "${scriptFile}")
-    else
-      echo "Error: Could not find ${scriptFile}"
-      exit 1
-    fi
-  done
-
+  testFile=$(getAbsolutePath "${testFile}")
   command="${command} -e UIASCRIPT \"${testFile}\""
+  echo "${command}"
+else
+  echo "Error: No test script was given"
+  exit 1
 fi
 
 if (( ${verbose} > 0))

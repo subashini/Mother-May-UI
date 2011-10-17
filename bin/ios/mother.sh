@@ -158,7 +158,8 @@ function setTargetApp {
     # Finds the most recent version of the app
     targetApp=$(find ~/Library/Developer/Xcode/DerivedData -type d -path "*/Build/Products/Debug-${environment}/${app}" -ls \
       | sort -M -k8,10 \
-      | awk '{ print $11 }')
+      | tr -s " " \
+      | cut -d" " -f 11-)
   fi
 
   if [[ -z "${targetApp}" ]]

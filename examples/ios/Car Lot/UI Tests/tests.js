@@ -8,7 +8,7 @@
 //    f. The test results will be outputted in the Editor Log
 //
 // 2) Using the included bash script mother.sh (Xcode 4.2+ only)
-//    a. mother/bin/ios/mother.sh -i <device UDID> -a "Car Lot.app" -o runs -v tests.js
+//    a. mother/bin/ios/mother.sh -w <device UDID> -a "Car Lot.app" -o runs -t tests.js -v
 //       This command will test the Car Lot app on the specified device,
 //       outputting the results and screenshots to the runs directory
 

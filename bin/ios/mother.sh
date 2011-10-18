@@ -4,7 +4,7 @@
 #
 # mother.sh
 #
-#   Invokes the UI Automation tests using the Mother-May-UI javascript test
+#   Invokes the UI Automation tests using the Mother May UI JavaScript test
 #   framework.
 #
 # Example(s):

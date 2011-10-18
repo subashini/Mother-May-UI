@@ -6,9 +6,9 @@ Automation](http://developer.apple.com/library/ios/documentation/DeveloperTools/
 
 Wait. What?
 
-Xcode provides the Automation instrument that allows for testing the UI for iOS
-apps in JavaScript. The JavaScript framework can simulate user interactions and
-test for conditions.
+Xcode provides the Automation instrument, which allows for testing the UI for
+iOS apps in JavaScript. The JavaScript framework can simulate user interactions
+and test for conditions.
 
 Mother May UI extends the Automation framework to make it simple to focus on
 Behavior Driven Development. Really, Mother May UI just makes it easy to write
@@ -19,8 +19,8 @@ lives easier.
 
 ## Example
 
-Let's begin with a basic scenario to automate and verify: Logging in as a user
-then logging out.
+Let's begin with a basic scenario we'd like to automate and verify: Logging in
+as a user then logging out.
 
 ```javascript
 #import "mother-ios.js";
@@ -49,10 +49,10 @@ Pretty sweet, simply define a scenario and a set of tests to run inside the
 scenario. Usually, a test case will refer to a single view on the iPhone or iPad
 and a scenario will encompass multiple views.
 
-But, the real beauty comes when when reusing the test cases. Once a test case is
+But, the real beauty comes when reusing the test cases. Once a test case is
 defined in any scenario, the test case can be reused by simply referencing the
-test name. Here's another test scenario that would follow the `Log in and log out as
-testUser`.
+test name. Here's another test scenario that would follow the `Log in and log
+out as testUser`.
 
 ```javascript
 mother.may.I('Log in, click a cell, then log out')
@@ -93,7 +93,7 @@ Mmm, succulent.
 
 In addition to a framework for easier UI testing of iOS apps, Mother May UI also
 provides a bash script to run your tests from the command line. That's right,
-include automated UI testing as part of your continuous integration environment.
+include automated UI testing as part of your continuous integration solution.
 
 ```bash
 mother.sh -w <device UDID> -a "Car Lot.app" -o runs -t tests.js -v
@@ -105,24 +105,15 @@ The important thing to note when navigating the code is that the core mother.js
 code is platform agnostic. `lib/mother.js` is meant to provide simple BDD UI
 testing to all JavaScript environments, including the browser, Node.js and iOS.
 
-iOS specific code will usually reside in an ios subdirectory.
+iOS specific code will usually reside in an `ios` subdirectory.
 
-```
-# Any shell scripts to help with running Mother May UI
-bin/
-# iOS specific shell script for launching instruments and running Mother May UI
-bin/ios/mother.js
-# Example code
-examples/
-# Example iOS project with a Mother May UI test file
-examples/ios/Car Lot/
-examples/ios/Car Lot/UI Tests/test.js
-# Cross-Platform Mother May UI framework
-lib/mother.js
-lib/asserts.js
-# iOS specific additions to Mother May UI
-lib/ios/
-```
+ * `bin/` - Any shell scripts to help with running Mother May UI
+ * `bin/ios/mother.js` - iOS specific shell script for launching instruments
+ * `examples/` - Example code
+ * `examples/ios/Car Lot/` - Example iOS project
+ * `examples/ios/Car Lot/UI Tests/test.js` - Test file for example iOS project
+ * `lib/mother.js` - Cross-Platform Mother May UI framework
+ * `lib/ios/` - iOS specific additions to Mother May UI
 
 ## License (MIT)
 
